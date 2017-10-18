@@ -25,14 +25,30 @@ sigma = 0.3;
 
 C = [0.01 0.03 0.1 0.3 1 3 10 30];
 sigma = [0.01 0.03 0.1 0.3 1 3 10 30];
+C_len = length(C(1,:));
+sigma_len = length(sigma(1,:));
+err = zeros(C_len, sigma_len);
 
-for(i=1:length(C(1,:)))
-  for(j=1:length(sigma(1,:)))
-    my_model = svmTrain(X, y, C(i), @(x1, x2)gaussianKernel(Xval(:,1), Xval(:,2), sigma(j)))
-    %model= svmTrain(X, y, C, @(x1, x2) gaussianKernel(x1, x2, sigma));
+x1 = X(:,1);
+x2 = X(:,2);
+
+for i=1:C_len
+  for j=1:sigma_len
+    my_model = svmTrain(X, y, C(i), @(x1, x2)gaussianKernel(x1, x2, sigma(j)));
+    pred = svmPredict(my_model, Xval);
+    err(i,j) = mean(double(pred ~= yval));
   end
 end
+
+err
+
+[val, minrow] = min(min(err,[],2));
+C = C(minrow)
+
+[val, mincol] = min(min(err,[],1));
+sigma = sigma(mincol)
 
 % =========================================================================
 
 end
+
